@@ -1,0 +1,69 @@
+<html>
+
+    <head>
+        <script type="text/javascript">
+            let perc;
+            window.onload = () => {
+                perc = document.getElementById('perc');
+            }
+            function LoadPixels(file, mid, cb) {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onloadend = (Reader) => {
+                    if (Reader.target.error) cb(Reader.target.err, undefined);
+
+                    const image = document.getElementById('image');
+                    const cnv = document.createElement('canvas');
+                    const perc = document.getElementById('perc');
+                    image.src = Reader.target.result;
+                    cnv.width = image.width;
+                    cnv.height = image.height;
+                    cnv.getContext('2d').drawImage(image, 0, 0, image.width, image.height);
+                    
+                    // nonBlock(() => {
+                        console.log("width:", image.width, "height:", image.height);
+                        let PixelArray = new Array(image.height);
+                        for (let h = 0, a=image.height; h < a; h++) {
+                            PixelArray[h] = new Array(a)
+                            for (let w = 0, b=image.width; w < b; w++) {
+                                PixelArray[h][w] = cnv.getContext('2d').getImageData(w, h, 1, 1).data;
+                            }
+                            // nonBlock(() => {
+                            //     perc.textContent = (h/a).toFixed(3);
+                            // })
+                        }
+                        
+                        cb(undefined,PixelArray);
+                    // })
+                }
+            }
+            function FileHandler(files) {
+                const Timer = Date.now();
+                // nonBlock(() => {
+                LoadPixels(files[0], (Process) => {perc.textContent = Process}, (err, PixelArray) => {
+                    
+                    console.log("Finished in " + (Date.now() - Timer) + "ms");
+                });
+                // })
+                console.log("Started");
+            }
+            function nonBlock(callback) {
+                setTimeout(() => {
+                    callback();
+                }, 0);
+            }
+        </script>
+    </head>
+
+    <body>
+
+		<div>
+			<input id="Fileinput" type="file" accept="image/jpg,image/png,image/jpeg" oninput="FileHandler(this.files)">
+            <!-- <button onclick="test()">Submit</button> -->
+			<div id="perc">0</div>
+			<img id="image" src="./" alt="Select Image">
+		</div>
+
+    </body>
+
+</html>
